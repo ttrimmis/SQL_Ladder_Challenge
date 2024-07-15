@@ -5,15 +5,16 @@ The only new topic in this file is window functions. By itself, this topic is no
 ## Window Functions
 
 78) Create a daily cumulative sum of the trading volume of the Yum! stock in `yum`.
-
+```sql
 SELECT
     *,
     SUM(volume) OVER (ORDER BY date) AS cumulative_sum
 FROM
     yum;
+```
 
 79) Create a cumulative sum of the trading volume of Yum! across months. That is, the final row of this query should be the cumulative sum of all months from 2015 through 2019.
-
+```sql
 SELECT
     *,
     STRFTIME("%Y", date) AS year,
@@ -23,6 +24,7 @@ FROM
     yum
 GROUP BY year, month
 ORDER BY year, month;
+```
 
 80) For March 2017, create a table from `yum` with the following columns:
 * Day of the month
@@ -30,7 +32,7 @@ ORDER BY year, month;
 * Cumulative low (ie, lowest low so far this month)
 * Cumulative high (ie, highest high so far this month)
 * Cumulative total volume
-
+```sql
 SELECT
     STRFTIME("%d", date) AS day_of_month,
     ROW_NUMBER() OVER(ORDER BY date) as row_number,
@@ -42,18 +44,20 @@ FROM
 WHERE 
     STRFTIME("%Y", date) = "2017"
     AND STRFTIME("%m", date) = "03";
+```
 
 81) From `yum`, create a column that represents the 7-day moving average of the closing price. This syntax is very confusing. You can read more about it [here](https://www.sqlitetutorial.net/sqlite-window-functions/sqlite-window-frame/).
-
+```sql
 SELECT
     date,
     close,
     AVG(close) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg_7_days
 FROM
     yum;
+```
 
 82) Repeat the March 2017 problem but instead of cumulative highs, lows, and totals, show the 5-day moving highs and lows. (No need for volume here.)
-
+```sql
 SELECT
  date,
     high,
@@ -65,6 +69,7 @@ FROM
 WHERE 
     STRFTIME("%Y", date) = "2017"
     AND STRFTIME("%m", date) = "03";
+```
 
 83) The [**Williams %R**](https://www.investopedia.com/terms/w/williamsr.asp) is an economic trendline indicator of a stock. Query `yum` to only include two columns: the `date` (unmodified), and the 7-day Williams %R of the stock at that date, call it `williams_r`. It is computed as follows:
 
@@ -73,7 +78,7 @@ WHERE
 * `williams_r = (h7 - close) / (h7 - l7)`
 
 The easiest way to do this problem is to make a CTE containing `h7` and `l7`, and then produce `williams_r` by querying your CTE.
-
+```sql
 WITH HighLowCTE AS (
     SELECT
         date,
@@ -89,6 +94,7 @@ SELECT
 FROM
     HighLowCTE
 ORDER BY date;
+```
 
 84) Next, let's create the [**Stochastic Oscillator**](https://www.investopedia.com/terms/s/stochasticoscillator.asp) of `yum`. The stochastic oscillator is actually two lines: One called _%K_ and the other called _%D_. They are computed as follows:
 
@@ -105,7 +111,7 @@ date        percent_k   perecent_d
 2015-01-05  -0.7417199
 2015-01-06  -0.3257592  -0.7417199
 ```
-
+```sql
 WITH HighLowCTE AS (
     SELECT
         date,
@@ -128,6 +134,7 @@ SELECT
 		AVG(percent_k) OVER (ORDER BY date ROWS BETWEEN 3 PRECEDING AND 1 PRECEDING) AS percent_d
 FROM yum_percent_k 
 ORDER BY date;
+```
 
 85) In my opinion, this is the hardest problem in the ladder challenge. For each month between 2015 and 2019, as in the final problem from the `03` file, we'll attach Yum! stock data to the `transactions` data. Let's condense our `yum` data to show relevant monthly statistics. That is, for each month of each year, create a table with the following columns:
 * Year
